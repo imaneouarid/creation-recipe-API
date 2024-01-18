@@ -1,8 +1,21 @@
 const express = require("express");
 const Recipe =require ("../models/main")
+const userController = require('../controllers/userControllers');
+
+
 
 
 const router = express.Router();
+
+router.get('/signup',userController.signup_get );
+router.post('/signup', userController.signup_post);
+router.get('/signin', userController.signin_get);
+router.post('/signin', userController.signin_post);
+
+
+
+
+// Define a simple route user
 
 // Route to create a new recipe
 router.post('/recipe', async (req, res) => {
@@ -32,10 +45,16 @@ router.post('/recipe', async (req, res) => {
 router.get('/recipe', async (req, res) => {
     try {
         const recipe = await Recipe.find()
+        console.log(!recipe);
+
+        if(!recipe){
+            res.status(404).send({message:'Not Found '});
+
+        }
         res.status(200).json(recipe);
     } catch (error) {
         console.error(error);
-        res.status(404).send('Data not found');
+        res.status(500).send('Server Error ');
     }
 });
 
@@ -68,7 +87,7 @@ router.delete('/recipe/:id', async (req, res) => {
       // If the recipe exists, you can now delete it
       await recipe.deleteOne();
   
-      res.json({ message: `Recipe ${recipe} deleted successfully` });
+      res.json({ message: ` Recipe   ${recipe.name}  is deleted successfully` });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
@@ -92,7 +111,7 @@ router.delete('/recipe/:id', async (req, res) => {
         // Save the updated recipe
         const updatedRecipe = await recipe.save();
 
-        res.json({ message: 'Recipe updated successfully', recipe: updatedRecipe });
+        res.json({ message: 'Recipe updated successfully ', recipe: updatedRecipe });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error', error: error.message });

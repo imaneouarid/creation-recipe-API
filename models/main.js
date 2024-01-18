@@ -1,6 +1,6 @@
 const  mongoose  = require("mongoose")
 
-// creating  model for the database table a basic recipe schema as mentioned below.
+// create model for the database table  recipe schema .
 
 
 const RecipesSchema = new mongoose.Schema({
@@ -17,10 +17,12 @@ const RecipesSchema = new mongoose.Schema({
         
     },
     imageurl: {
-        type: String, // Assuming an array of ingredient strings
+        type: String, 
        
     },
 })
-const Recipe = mongoose.model("Recipe",RecipesSchema)
+const Recipe = mongoose.model("Recipe",RecipesSchema) //creer mongoose model  collection
 
-module.exports=Recipe
+module.exports=Recipe;
+
+

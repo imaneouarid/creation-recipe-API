@@ -1,19 +1,22 @@
+
+
 const express = require("express");
 const mongoose = require("mongoose");
 const router = require('./routes/index')
 const app = express();
- //v
+ //middleware
+ app.use 
 app.use(express.json())
-
-
 app.use('/',router)
-// mongo db connected
+
+
+//  connexion
 mongoose.connect("mongodb://localhost:27017/Recipes")
 .then(()=>{
     console.log("connected to database");
 })
 .catch((err)=>{
-    console.log("not connected to database"+err);
+    console.log("not connected to database " +err);
 })
 
 
