@@ -1,52 +1,74 @@
-// controller 
+// userController.js
+
 const User = require("../models/userModels");
-// handle errors
-const handleErrors = (err)=>{
-    console.log(err.message,err.code);
-    let erroe = { email: '', password : ''};
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt'); 
+const your_secret_key ='hiimanezwinaaa'
 
-// validation errors 
-if (err.message.includes('user validation failed')){
-     object.values(err.errors).forEach(({properties}) => {
-        errors[properties.path]= properties.message;
-     });
-     console.log( err.propr);
 
-     
-}
-}
+const handleErrors = (err) => {
+    let errors = {};
 
-module.exports.signup_get = (req, res) => {
+    if (err.code === 11000) {
+        errors.email = "That email is already registered";
+        return errors;
+        
+    }
+
+    if (err.name === 'ValidationError') {
+        Object.values(err.errors).forEach(({ properties }) => {
+            errors[properties.path] = properties.message;
+
+        });
+    }
+
+    return errors;
+};
+
+const createToken = (id) => {
+    return jwt.sign({ id }, your_secret_key, { expiresIn: '1d' });
+};
+module.exports.signup_post = async (req, res) => {
     const { email, password } = req.body;
-    console.log(email, password);
-    res.send('user login');
+  
+    try {
+      const user = await User.create({ email, password });
+      const token = createToken(user._id);
+      res.status(201).json({ user, token });
+    }
+    catch(err) {
+       console.error(err);
 
+      const errors = handleErrors(err);
+      res.status(400).json({ errors });
+    }
+   
   }
-  module.exports.signup_post = async (req, res) => {
+
+
+module.exports.login_post = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-      const user = await User.create({ email, password });
-      res.status(201).json(user);
+        const user = await User.findOne({ email });
+
+        if (user) {
+            const auth = await bcrypt.compare(password, user.password);
+
+            if (auth) {
+                const token = createToken(user._id);
+                res.status(200).json({ user, token });
+            } else {
+                res.status(401).json({ message: 'user not exist' });
+            }
+        } else {
+            res.status(401).json({ message: 'user not exist' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal Server Error', error: err.message });
     }
-    catch(err) {
-        console.log(err)
-        
-    //   const errors = handleErrors(err);
-      res.status(400).send('errror not created');
-    }  }
-  
-  module.exports.signin_get = (req, res) => {
-    res.send('login');
-  }
-  
-
-  module.exports.signin_post = async (req, res) => {
-    const { email, password } = req.body;
-  
-    console.log(email, password);
-    res.send('user login');
-  }
+};
 
 
 
@@ -62,17 +84,23 @@ module.exports.signup_get = (req, res) => {
 
 
 
-  //   module.exports.signup_post = async (req, res) => {
+
+
+
+
+
+// module.exports.signup_post = async (req, res) => {
 //     const { email, password } = req.body;
-  
+
 //     try {
-//       const user = await User.create({ email, password });
-//       res.status(201).json(user);
+//         const user = await User.create({ email, password });
+//         const token = createToken(user._id);
+
+//         res.status(201).json({ user, token });
+//     } catch (err) {
+//         console.error(err);
+//         const errors = handleErrors(err);
+
+//         res.status(500).json({ message: 'Internal Server Error', error: err.message });
 //     }
-//     catch(err) {
-//       const errors = handleErrors(err);
-//       res.status(400).json({ errors });
-//     }
-   
-//   }
-  
+// };

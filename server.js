@@ -1,26 +1,32 @@
-
+// server.js
 
 const express = require("express");
 const mongoose = require("mongoose");
-const router = require('./routes/index')
+const router = require('./routes/index');
+const { requireAuth } = require('./middleware/authMiddleware');
+const cookieParser = require("cookie-parser");
+const  swaggerDocs  = require("./docs/swagger");
+
 const app = express();
- //middleware
- app.use 
-app.use(express.json())
-app.use('/',router)
+swaggerDocs(app, port)
 
+// Middleware
+app.use(express.json());  // Use the built-in JSON parsing middleware
+app.use(cookieParser());  // Use the built-in JSON parsing middleware
 
-//  connexion
+// Use the defined router
+app.use('/', router);
+
+// Connect to the database
 mongoose.connect("mongodb://localhost:27017/Recipes")
-.then(()=>{
-    console.log("connected to database");
-})
-.catch((err)=>{
-    console.log("not connected to database " +err);
-})
+  .then(() => {
+    console.log("Connected to the database");
+  })
+  .catch((err) => {
+    console.log("Not connected to the database " + err);
+  });
 
-
-// listen to port
+// Listen to port
 app.listen(3000, () => console.log("Server is running on port 3000"));
 
 

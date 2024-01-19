@@ -1,5 +1,8 @@
+//Routes/index
 const express = require("express");
 const Recipe =require ("../models/main")
+const { requireAuth } = require('../middleware/authMiddleware');
+
 const userController = require('../controllers/userControllers');
 
 
@@ -7,42 +10,40 @@ const userController = require('../controllers/userControllers');
 
 const router = express.Router();
 
-router.get('/signup',userController.signup_get );
 router.post('/signup', userController.signup_post);
-router.get('/signin', userController.signin_get);
-router.post('/signin', userController.signin_post);
-
+router.post('/signin', userController.login_post);
 
 
 
 // Define a simple route user
 
 // Route to create a new recipe
-router.post('/recipe', async (req, res) => {
+// Route to create a new recipe
+router.post('/recipe', requireAuth, async (req, res) => {
     try {
-        // Assuming req.body contains the data for the new recipe
-        const { name, description, ingredients, imageurl } = req.body;
-
-        // Create a new recipe using the Recipe model
-        const newRecipe = new Recipe({
-            name,
-           description,
-            ingredients,
-            imageurl,
-        });
-
-        // enregistrer 
-        const savedRecipe = await newRecipe.save();
-
-        // Send the saved recipe as a JSON response
-        res.status(201).json(savedRecipe);
+      // Assuming req.body contains the data for the new recipe
+      const { name, description, ingredients, imageurl } = req.body;
+  
+      // Create a new recipe using the Recipe model
+      const newRecipe = new Recipe({
+        name,
+        description,
+        ingredients,
+        imageurl,
+      });
+  
+      // enregistrer 
+      const savedRecipe = await newRecipe.save();
+  
+      // Send the saved recipe as a JSON response
+      res.status(201).json(savedRecipe);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+      console.error(error);
+      res.status(500).send('Internal Server Error');
     }
-});
+  });
 
-router.get('/recipe', async (req, res) => {
+router.get('/recipe',requireAuth, async (req, res) => {
     try {
         const recipe = await Recipe.find()
         console.log(!recipe);
@@ -62,7 +63,7 @@ router.get('/recipe', async (req, res) => {
 
 
 
-router.get('/recipe/:id', async (req, res) => {
+router.get('/recipe/:id',requireAuth, async (req, res) => {
     try {
         const recipe = await Recipe.findById(req.params.id);
         
@@ -76,7 +77,7 @@ router.get('/recipe/:id', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
-router.delete('/recipe/:id', async (req, res) => {
+router.delete('/recipe/:id',requireAuth, async (req, res) => {
     try {
       const recipe = await Recipe.findById(req.params.id);
   
@@ -93,7 +94,7 @@ router.delete('/recipe/:id', async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
       }
   });
-  router.put('/recipe/:id', async (req, res) => {
+  router.put('/recipe/:id',requireAuth, async (req, res) => {
     try {
         const recipe = await Recipe.findById(req.params.id);
 
