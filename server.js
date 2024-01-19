@@ -5,17 +5,22 @@ const mongoose = require("mongoose");
 const router = require('./routes/index');
 const { requireAuth } = require('./middleware/authMiddleware');
 const cookieParser = require("cookie-parser");
-const  swaggerDocs  = require("./docs/swagger");
+const swaggerDocs = require('./docs/swagger.js'); // Use require for CommonJS modules
 
 const app = express();
-swaggerDocs(app, port)
 
 // Middleware
 app.use(express.json());  // Use the built-in JSON parsing middleware
 app.use(cookieParser());  // Use the built-in JSON parsing middleware
 
+swaggerDocs(app, 3000);
+
 // Use the defined router
 app.use('/', router);
+// function swaggerDocs(app, port) {
+//     console.log('Swagger Docs function called');
+//     // Rest of your code...
+//   }
 
 // Connect to the database
 mongoose.connect("mongodb://localhost:27017/Recipes")
