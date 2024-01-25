@@ -10,8 +10,101 @@ const userController = require('../controllers/userControllers');
 
 const router = express.Router();
 
-router.post('/signup', userController.signup_post);
-router.post('/signin', userController.login_post);
+/**
+ * @swagger
+ * /signup:
+ *   post:
+ *     summary: Sign up a new user
+ *     description: Creates a new user account with the provided email and password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The email address of the user.
+ *               password:
+ *                 type: string
+ *                 description: The password for the user account.
+ *                 minLength: 6
+ *     responses:
+ *       '201':
+ *         description: User successfully created. Returns the user details and a token.
+ *         content:
+ *           application/json:
+ *             example:
+ *               user:
+ *                 _id: 'some_user_id'
+ *                 email: 'user@example.com'
+ *               token: 'some_jwt_token'
+ *       '400':
+ *         description: Bad Request. Returns error details.
+ *         content:
+ *           application/json:
+ *             example:
+ *               errors:
+ *                 email: 'Invalid email format'
+ *                 password: 'Password must be at least 6 characters long'
+ */
+
+
+
+router.post('/signup', userController.signup_user);
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticate a user based on the provided email and password.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The email address of the user.
+ *               password:
+ *                 type: string
+ *                 description: The password for the user account.
+ *     responses:
+ *       '200':
+ *         description: User successfully authenticated. Returns the user details and a token.
+ *         content:
+ *           application/json:
+ *             example:
+ *               user:
+ *                 _id: 'some_user_id'
+ *                 email: 'user@example.com'
+ *               token: 'some_jwt_token'
+ *       '401':
+ *         description: Unauthorized. Returns a message indicating incorrect email or password.
+ *         content:
+ *           application/json:
+ *             examples:
+ *               incorrectEmail:
+ *                 value:
+ *                   message: 'Your email is incorrect'
+ *               incorrectPassword:
+ *                 value:
+ *                   message: 'Your password is incorrect'
+ *       '500':
+ *         description: Internal Server Error. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Internal Server Error'
+ *               error: 'Error details...'
+ */
+
+router.post('/signin', userController.login_user);
 
 
 
@@ -19,6 +112,59 @@ router.post('/signin', userController.login_post);
 
 // Route to create a new recipe
 // Route to create a new recipe
+
+router.put('/ModifyUser', userController.Modify_user);
+
+
+/**
+ * @swagger
+ * /recipe:
+ *   post:
+ *     summary: Create a new recipe
+ *     description: Endpoint to create a new recipe.
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The name of the recipe.
+ *               description:
+ *                 type: string
+ *                 description: The description of the recipe.
+ *               ingredients:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: An array of ingredients for the recipe.
+ *               imageurl:
+ *                 type: string
+ *                 description: The URL of the image associated with the recipe.
+ *     responses:
+ *       '201':
+ *         description: Recipe successfully created. Returns the details of the created recipe.
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: 'some_recipe_id'
+ *               name: 'Example Recipe'
+ *               description: 'A delicious recipe'
+ *               ingredients: ['Ingredient 1', 'Ingredient 2']
+ *               imageurl: 'https://example.com/recipe-image.jpg'
+ *       '500':
+ *         description: Internal Server Error. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Internal Server Error'
+ *               error: 'Error details...'
+ */
+
 router.post('/recipe', requireAuth, async (req, res) => {
     try {
       // Assuming req.body contains the data for the new recipe
@@ -43,6 +189,45 @@ router.post('/recipe', requireAuth, async (req, res) => {
     }
   });
 
+  /**
+ * @swagger
+ * /recipe:
+ *   get:
+ *     summary: Get all recipes
+ *     description: Retrieve a list of all recipes.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Successful response. Returns an array of recipes.
+ *         content:
+ *           application/json:
+ *             example:
+ *               - _id: 'some_recipe_id_1'
+ *                 name: 'Recipe 1'
+ *                 description: 'A delicious recipe'
+ *                 ingredients: ['Ingredient 1', 'Ingredient 2']
+ *                 imageurl: 'https://example.com/recipe-1-image.jpg'
+ *               - _id: 'some_recipe_id_2'
+ *                 name: 'Recipe 2'
+ *                 description: 'Another delicious recipe'
+ *                 ingredients: ['Ingredient A', 'Ingredient B']
+ *                 imageurl: 'https://example.com/recipe-2-image.jpg'
+ *       '404':
+ *         description: Recipes not found. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Recipes not found'
+ *       '500':
+ *         description: Internal Server Error. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Internal Server Error'
+ *               error: 'Error details...'
+ */
+
 router.get('/recipe',requireAuth, async (req, res) => {
     try {
         const recipe = await Recipe.find()
@@ -61,7 +246,46 @@ router.get('/recipe',requireAuth, async (req, res) => {
 
 
 
-
+/**
+ * @swagger
+ * /recipe/{id}:
+ *   get:
+ *     summary: Get recipe by ID
+ *     description: Retrieve details about a recipe based on its ID.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Recipe ID
+ *     responses:
+ *       '200':
+ *         description: Successful response. Returns the details of the requested recipe.
+ *         content:
+ *           application/json:
+ *             example:
+ *               _id: 'some_recipe_id'
+ *               name: 'Example Recipe'
+ *               description: 'A delicious recipe'
+ *               ingredients: ['Ingredient 1', 'Ingredient 2']
+ *               imageurl: 'https://example.com/recipe-image.jpg'
+ *       '404':
+ *         description: Recipe not found. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Recipe not found'
+ *       '500':
+ *         description: Internal Server Error. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Internal Server Error'
+ *               error: 'Error details...'
+ */
 
 router.get('/recipe/:id',requireAuth, async (req, res) => {
     try {
@@ -77,6 +301,44 @@ router.get('/recipe/:id',requireAuth, async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+/**
+ * @swagger
+ * /recipe/{id}:
+ *   delete:
+ *     summary: Delete recipe by ID
+ *     description: Delete a recipe based on its ID.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Recipe ID
+ *     responses:
+ *       '200':
+ *         description: Recipe successfully deleted. Returns a success message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Recipe successfully deleted'
+ *       '404':
+ *         description: Recipe not found. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Recipe not found'
+ *       '500':
+ *         description: Internal Server Error. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Internal Server Error'
+ *               error: 'Error details...'
+ */
+
 router.delete('/recipe/:id',requireAuth, async (req, res) => {
     try {
       const recipe = await Recipe.findById(req.params.id);
@@ -94,6 +356,68 @@ router.delete('/recipe/:id',requireAuth, async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
       }
   });
+
+  /**
+ * @swagger
+ * /recipe/{id}:
+ *   put:
+ *     summary: Update recipe by ID
+ *     description: Update the details of a recipe based on its ID.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Recipe ID
+ *       - in: body
+ *         name: body
+ *         description: Updated recipe details
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *                 ingredients:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 imageurl:
+ *                   type: string
+ *     responses:
+ *       '200':
+ *         description: Recipe successfully updated. Returns the details of the updated recipe.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Recipe updated successfully'
+ *               recipe:
+ *                 _id: 'some_recipe_id'
+ *                 name: 'Updated Recipe'
+ *                 description: 'An updated delicious recipe'
+ *                 ingredients: ['Updated Ingredient 1', 'Updated Ingredient 2']
+ *                 imageurl: 'https://example.com/updated-recipe-image.jpg'
+ *       '404':
+ *         description: Recipe not found. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Recipe not found'
+ *       '500':
+ *         description: Internal Server Error. Returns an error message.
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: 'Internal Server Error'
+ *               error: 'Error details...'
+ */
   router.put('/recipe/:id',requireAuth, async (req, res) => {
     try {
         const recipe = await Recipe.findById(req.params.id);

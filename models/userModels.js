@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
 userSchema.post('save', function (doc, next) {
   console.log('new user was created & saved', doc);
   next();
-  
+
 });
 userSchema.statics.login=async function (email,password){
   const user = await this.findOne({email});
@@ -31,8 +31,10 @@ userSchema.statics.login=async function (email,password){
   if (auth){
 
     return user;
+    
+
   }
-  throw Error ('incorrecr password')
+  throw Error ('incorrect password')
 }
   throw Error ('incorrect email')
 
